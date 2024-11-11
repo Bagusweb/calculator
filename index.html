@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Calculator</title>
+	</head>
+	<style>html {
+		box-sizing: border-box;
+	}
+	
+	body {
+		margin: 0;
+		min-height: 100vh;
+		background-color: whitesmoke;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	.calculator {
+		background: white;
+		width: 400px;
+		border-radius: 12px;
+		box-shadow: 0 5px 30px -5px rgba(0, 0, 0, 0.6);
+	}
+	
+	.calculator-display {
+		background: rgb(50, 50, 50);
+		color: rgb(239, 239, 239);
+		margin: 0;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		border-radius: 10px 10px 0 0;
+	}
+	
+	.calculator-display h1 {
+		margin: 0;
+		padding: 25px;
+		font-size: 45px;
+		font-family: "Lucida Console", sans-serif;
+		font-weight: 100;
+		overflow-x: auto;
+		transition: ease-in 0.3s;
+	}
+	
+	/* scroll */
+	::-webkit-scrollbar {
+		width: 10px;
+	}
+	::-webkit-scrollbar-track {
+		background: #f1f1f1;
+	}
+	::-webkit-scrollbar-thumb {
+		background: #888;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: #555;
+	}
+	
+	/* buttons */
+	.calculator-buttons {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		grid-gap: 10px;
+		padding: 10px;
+	}
+	
+	button {
+		min-height: 50px;
+		font-size: 20px;
+		font-weight: 100;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		background: rgb(225, 225, 225);
+	}
+	button:hover {
+		background: rgb(155, 155, 155);
+		color: rgb(218, 218, 218);
+	}
+	button:active {
+		transform: translateY(2px);
+	}
+	button:focus {
+		outline: none;
+	}
+	.operator {
+		background: rgb(179, 179, 179);
+		color: whitesmoke;
+		font-size: 30px;
+	}
+	.operator:hover {
+		background: rgb(128, 128, 128);
+	}
+	
+	.clear {
+		background: rgb(216, 44, 44);
+		color: whitesmoke;
+	}
+	.clear:hover {
+		background: rgb(143, 17, 17);
+	}
+	
+	.equal-sign {
+		grid-column: -2;
+		grid-row: 2 / span 4;
+		background: dodgerblue;
+	}
+	.equal-sign:hover {
+		background: rgb(14, 107, 199);
+	}
+	
+	/* media queries: Large Smartphone (Vertical) */
+	@media screen and (max-width: 600px) {
+		.calculator {
+			width: 95%;
+		}
+	}</style>
+	<body>
+		<!-- calculator  -->
+		<div class="calculator">
+			<!-- Display -->
+			<div class="calculator-display">
+				<h1>0</h1>
+			</div>
+			<!-- buttons -->
+			<div class="calculator-buttons">
+				<button class="operator" value="+">+</button>
+				<button class="operator" value="-">-</button>
+				<button class="operator" value="*">*</button>
+				<button class="operator" value="/">/</button>
+				<button value="7">7</button>
+				<button value="8">8</button>
+				<button value="9">9</button>
+				<button value="4">4</button>
+				<button value="5">5</button>
+				<button value="6">6</button>
+				<button value="1">1</button>
+				<button value="2">2</button>
+				<button value="3">3</button>
+				<button class="decimal" value=".">.</button>
+				<button value="0">0</button>
+				<button class="clear" id="clear-btn">C</button>
+				<button class="equal-sign operator" value="=">=</button>
+			</div>
+		</div>
+		<!-- Script -->
+		<script>const calculatorDisplay = document.querySelector('h1')
+			const inputBtns = document.querySelectorAll('button')
+			const clearBtn = document.querySelector('#clear-btn')
+			
+			// calculate first and second vlaue depending on operator
+			const calculate = {
+				'/': (firstNumber, secondNumber) => firstNumber / secondNumber,
+				'*': (firstNumber, secondNumber) => firstNumber * secondNumber,
+				'+': (firstNumber, secondNumber) => firstNumber + secondNumber,
+				'-': (firstNumber, secondNumber) => firstNumber - secondNumber,
+				'=': (firstNumber, secondNumber) => secondNumber
+			}
+			
+			let firstValue = 0
+			let operatorValue = ''
+			let awaitingNextValue = false
+			
+			function sendNumberValue(number) {
+				// replace current display value if first value is entered
+				if (awaitingNextValue) {
+					calculatorDisplay.textContent = number
+					awaitingNextValue = false
+				} else {
+					// if current display value = 0, replace it, if not add number
+					const displayValue = calculatorDisplay.textContent
+					calculatorDisplay.textContent = displayValue === '0' ? number : displayValue + number
+				}
+			}
+			
+			function addDecimal() {
+				// if operator pressed dont add decimal
+				if (awaitingNextValue) return
+				// if no decimal add one
+				if (!calculatorDisplay.textContent.includes('.')) {
+					calculatorDisplay.textContent = `${calculatorDisplay.textContent}.`
+				}
+			}
+			
+			function useOperator(operator) {
+				const currentValue = Number(calculatorDisplay.textContent)
+				// prevent multiple operators
+				if (operatorValue && awaitingNextValue) {
+					operatorValue = operator
+					return
+				}
+				// assign first value if no value
+				if (!firstValue) {
+					firstValue = currentValue
+				} else {
+					const calculation = calculate[operatorValue](firstValue, currentValue)
+					calculatorDisplay.textContent = calculation
+					firstValue = calculation
+				}
+				// ready for the next value
+				awaitingNextValue = true
+				operatorValue = operator
+			}
+			
+			// reset all values, display
+			function resetAll() {
+				firstValue = 0
+				operatorValue = ''
+				awaitingNextValue = false
+				calculatorDisplay.textContent = '0'
+			}
+			
+			// add event listener on number, operators, decimal
+			inputBtns.forEach(inputBtn => {
+				if (inputBtn.classList.length === 0) {
+					inputBtn.addEventListener('click', () => sendNumberValue(inputBtn.value))
+				} else if (inputBtn.classList.contains('operator')) {
+					inputBtn.addEventListener('click', () => useOperator(inputBtn.value))
+				} else if (inputBtn.classList.contains('decimal')) {
+					inputBtn.addEventListener('click', () => addDecimal())
+				}
+			})
+			
+			// event listener
+			clearBtn.addEventListener('click', resetAll)</script>
+	</body>
+</html>
